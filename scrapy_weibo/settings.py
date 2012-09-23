@@ -17,6 +17,7 @@ SCHEDULER = "scrapy_redis.scheduler.Scheduler"
 
 # don't cleanup redis queues, allows to pause/resume crawls
 SCHEDULER_PERSIST = False
+SCHEDULER_REFRESH = True
 
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
