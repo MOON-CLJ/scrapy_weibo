@@ -1,4 +1,5 @@
 import redis
+import simplejson as json
 from scrapy.spider import BaseSpider
 from scrapy import log
 from scrapy.settings import Settings
@@ -26,7 +27,9 @@ class UserTimelineSpider(BaseSpider):
                               headers={'Authorization': 'OAuth2 %s' % token})
 
     def parse(self, response):
-        pass
+        resp = json.loads(response.body)
+        if "error_code" in resp and resp["error_code"] in [21314, 21315, 21316, 21317]:
+            raise CloseSpider('ERROR TOKEN CANT VALID')
 
     def load_uids_token(self):
         settings = Settings()
