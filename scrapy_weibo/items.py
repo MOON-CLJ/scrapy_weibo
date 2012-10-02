@@ -24,6 +24,7 @@ class WeiboItem(Item):
     mid = Field()
     text = Field()
     source = Field()
+    comments_count = Field()
     geo = Field()
     urls = Field()
     hashtags = Field()
