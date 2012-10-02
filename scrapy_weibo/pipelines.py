@@ -15,7 +15,8 @@ class MongodbPipeline(object):
         connection = pymongo.Connection(host, port)
         db = connection.admin
         db.authenticate('root', 'root')
-        log.msg('Mongod connect to {host}:{port}').format(host=host, port=port)
+        log.msg('Mongod connect to {host}:{port}'.format(host=host, port=port), level=log.WARNING)
+
         db = connection.weibo
         self.db = db
 
