@@ -18,7 +18,7 @@ class RequestTokenMiddleware(object):
     def __init__(self):
         host = settings.get("REDIS_HOST")
         port = settings.get("REDIS_PORT")
-        log.msg('Redis connect to {host}:{port}').format(host=host, port=port)
+        log.msg('Redis connect to {host}:{port}'.format(host=host, port=port), level=log.WARNING)
         r = redis.Redis(host, port)
         self.req_count = ReqCount(r)
 
