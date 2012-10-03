@@ -71,8 +71,13 @@ class UserTimelineApril(BaseSpider):
                     if 'retweeted_status' in status:
                         if 'deleted' in status['retweeted_status']:
                             continue
+
                         retweeted_user = UserItem()
                         retweeted_user['name'] = status['retweeted_status']['user']['name']
+                        retweeted_user['uid'] = status['retweeted_status']['user']['id']
+                        retweeted_user['gender'] = status['retweeted_status']['user']['gender']
+                        retweeted_user['location'] = status['retweeted_status']['user']['location']
+                        retweeted_user['verified'] = status['retweeted_status']['user']['verified']
 
                         weibo['retweeted_status'] = WeiboItem()
                         weibo['retweeted_status']['user'] = retweeted_user

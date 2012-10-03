@@ -30,6 +30,7 @@ class MongodbPipeline(object):
         weibo['comments_count'] = item['comments_count']
 
         text = item['text']
+        weibo['text'] = text
         weibo['at_users'] = re.findall(r' @(\S+)', text)
 
         if 'retweeted_status' in item:
