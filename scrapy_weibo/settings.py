@@ -17,7 +17,7 @@ USER_AGENT = '%s/%s' % (BOT_NAME, BOT_VERSION)
 SCHEDULER = "scrapy_redis.scheduler.Scheduler"
 
 # don't cleanup redis queues, allows to pause/resume crawls
-SCHEDULER_PERSIST = False
+SCHEDULER_PERSIST = True
 SCHEDULER_REFRESH = True
 
 DOWNLOAD_DELAY = 2
