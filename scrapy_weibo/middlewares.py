@@ -35,9 +35,10 @@ class RequestTokenMiddleware(object):
 
         if used > 900:
             reset_time_in, remaining = self.get_limit_sts(token)
-            log.msg("{spider} REACH API LIMIT, SLEEP {reset_time_in} SECONDS".format(
-                spider=spider.name, reset_time_in=reset_time_in), level=log.WARNING)
-            time.sleep(reset_time_in)
+            if remaining < 100:
+                log.msg("{spider} REACH API LIMIT, SLEEP {reset_time_in} SECONDS".format(
+                    spider=spider.name, reset_time_in=reset_time_in), level=log.WARNING)
+                time.sleep(reset_time_in)
 
             for token in self.req_count.all_tokens():
                 _, remaining = self.get_limit_sts(token)
