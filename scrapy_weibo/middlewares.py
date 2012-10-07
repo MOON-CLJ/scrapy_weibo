@@ -9,6 +9,9 @@ from scrapy_redis.req_count import ReqCount
 
 
 # weibo apis default extras config
+REDIS_HOST = 'localhost'
+REDIS_PORT = 6379
+API_KEY = 'test'
 LIMIT_URL = 'https://api.weibo.com/2/account/rate_limit_status.json?access_token={access_token}'
 
 
@@ -16,11 +19,12 @@ class RequestTokenMiddleware(object):
     req_count = None
 
     def __init__(self):
-        host = settings.get("REDIS_HOST")
-        port = settings.get("REDIS_PORT")
+        host = settings.get("REDIS_HOST", REDIS_HOST)
+        port = settings.get("REDIS_PORT", REDIS_PORT)
+        api_key = settings.get("API_KEY", API_KEY)
         log.msg('Redis connect to {host}:{port}'.format(host=host, port=port), level=log.WARNING)
         r = redis.Redis(host, port)
-        self.req_count = ReqCount(r)
+        self.req_count = ReqCount(r, api_key)
 
         for token in self.req_count.all_tokens():
             _, remaining = self.get_limit_sts(token)

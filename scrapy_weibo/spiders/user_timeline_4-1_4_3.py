@@ -13,7 +13,6 @@ REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
 UIDS_SET = '{spider}:uids'
 BASE_URL = 'https://api.weibo.com/2/statuses/user_timeline.json?uid={uid}&page={page}&since_id={since_id}&max_id={max_id}&count=100'
-LIMIT_URL = 'https://api.weibo.com/2/account/rate_limit_status.json?access_token={access_token}'
 
 
 class UserTimelineApril(BaseSpider):
