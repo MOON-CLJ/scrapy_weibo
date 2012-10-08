@@ -1,9 +1,8 @@
 import redis
-import time
 import math
 import simplejson as json
 from scrapy.spider import BaseSpider
-from scrapy_weibo.items import WeiboItem, UserItem
+from scrapy_weibo.utils import resp2item
 from scrapy import log
 from scrapy.conf import settings
 from scrapy.exceptions import CloseSpider
@@ -40,7 +39,7 @@ class RepostTimelineSpider(BaseSpider):
             raise CloseSpider('ERROR: TOKEN NOT VALID')
 
         try:
-            user, weibo, retweeted_user = self.resp_to_item(resp)
+            user, weibo, retweeted_user = resp2item(resp)
         except KeyError:
             retry += 1
             if retry > 3:
@@ -71,55 +70,6 @@ class RepostTimelineSpider(BaseSpider):
 
             yield request
 
-    def resp_to_item(self, resp):
-        """ /statuses/show """
-
-        weibo = WeiboItem()
-        user = UserItem()
-
-        weibo_keys = ['created_at', 'id', 'mid', 'text', 'source', 'reposts_count',
-                      'comments_count', 'attitudes_count', 'geo']
-        for k in weibo_keys:
-            try:
-                weibo[k] = resp[k]
-            except KeyError, e:
-                raise KeyError(e)
-
-        weibo['timestamp'] = self.local2unix(weibo['created_at'])
-
-        user_keys = ['id', 'name', 'gender', 'province', 'city', 'location',
-                     'description', 'verified', 'followers_count',
-                     'statuses_count', 'friends_count', 'profile_image_url',
-                     'bi_followers_count', 'verified', 'verified_reason']
-        for k in user_keys:
-            try:
-                user[k] = resp['user'][k]
-            except KeyError, e:
-                raise KeyError(e)
-
-        weibo['user'] = user
-
-        retweeted_user = None
-        if 'retweeted_status' in resp and 'deleted' not in resp['retweeted_status']:
-            retweeted_status = WeiboItem()
-            retweeted_user = UserItem()
-
-            for k in weibo_keys:
-                retweeted_status[k] = resp['retweeted_status'][k]
-            retweeted_status['timestamp'] = self.local2unix(retweeted_status['created_at'])
-
-            for k in user_keys:
-                retweeted_user[k] = resp['retweeted_status']['user'][k]
-
-            retweeted_status['user'] = retweeted_user
-            weibo['retweeted_status'] = retweeted_status
-
-        return user, weibo, retweeted_user
-
-    def local2unix(self, time_str):
-        time_format = '%a %b %d %H:%M:%S +0800 %Y'
-        return time.mktime(time.strptime(time_str, time_format))
-
     def more_reposts(self, response):
         resp = json.loads(response.body)
         page = response.meta['page']
@@ -147,7 +97,7 @@ class RepostTimelineSpider(BaseSpider):
 
         for repost in resp['reposts']:
             try:
-                user, weibo, retweeted_user = self.resp_to_item(repost)
+                user, weibo, retweeted_user = resp2item(repost)
             except KeyError:
                 continue
             source_weibo['reposts'].append(weibo['id'])
