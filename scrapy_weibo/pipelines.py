@@ -1,4 +1,5 @@
 import pymongo
+import time
 from scrapy.conf import settings
 from scrapy import log
 from scrapy_weibo.items import WeiboItem, UserItem
@@ -26,22 +27,54 @@ class MongodbPipeline(object):
             weibo['_id'] = weibo['id']
 
             if self.db.master_timeline_weibo.find({'_id': weibo['_id']}).count():
-                reposts = self.db.master_timeline_weibo.find_one(
-                    {'_id': weibo['_id']})['reposts']
-
-                repost_ids = (repost['id'] for repost in reposts)
+                old_weibo = self.db.master_timeline_weibo.find_one(
+                    {'_id': weibo['_id']})
 
                 for more_repost in weibo['reposts']:
-                    if more_repost['id'] not in repost_ids:
-                        reposts.append(more_repost)
+                    if more_repost not in old_weibo['reposts']:
+                        old_weibo['reposts'].append(more_repost)
+
+                update_keys = ['reposts_count', 'comments_count', 'attitudes_count']
+                updates = {}
+                updates['last_modify'] = time.time()
+                updates['reposts'] = old_weibo['reposts']
+                # comments should update
+                for key in update_keys:
+                    if key in weibo and weibo[key] is not None \
+                            and weibo[key] != old_weibo[key]:
+                        updates[key] = weibo[key]
 
                 self.db.master_timeline_weibo.update({'_id': weibo['_id']},
-                                                     {"$set": {"reposts": reposts}})
+                                                     {"$set": updates})
             else:
+                weibo['first_in'] = time.time()
+                weibo['last_modify'] = weibo['first_in']
                 self.db.master_timeline_weibo.insert(weibo)
         elif isinstance(item, UserItem):
             user = item.to_dict()
             user['_id'] = user['id']
-            self.db.master_timeline_user.save(user)
+            if self.db.master_timeline_user.find({'_id': user['_id']}).count():
+                old_user = self.db.master_timeline_user.find_one(
+                    {'_id': user['_id']})
+
+                update_keys = ['name', 'gender', 'province', 'city',
+                               'location', 'description', 'verified', 'followers_count',
+                               'statuses_count', 'friends_count', 'profile_image_url',
+                               'bi_followers_count', 'verified', 'verified_reason']
+                updates = {}
+                updates['last_modify'] = time.time()
+                for key in update_keys:
+                    if key in user and user[key] is not None \
+                            and user[key] != old_user[key]:
+                        updates[key] = user[key]
+
+                self.db.master_timeline_user.update({'_id': user['_id']},
+                                                    {"$set": updates})
+
+            else:
+                user['first_in'] = time.time()
+                user['last_modify'] = user['first_in']
+                user['active'] = False  # default
+                self.db.master_timeline_user.insert(user)
 
         return item

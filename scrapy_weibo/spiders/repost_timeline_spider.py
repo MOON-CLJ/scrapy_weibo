@@ -87,12 +87,10 @@ class RepostTimelineSpider(BaseSpider):
 
         weibo['timestamp'] = self.local2unix(weibo['created_at'])
 
-        weibo['reposts'] = []
-
         user_keys = ['id', 'name', 'gender', 'province', 'city', 'location',
                      'description', 'verified', 'followers_count',
                      'statuses_count', 'friends_count', 'profile_image_url',
-                     'bi_followers_count', 'verified']
+                     'bi_followers_count', 'verified', 'verified_reason']
         for k in user_keys:
             try:
                 user[k] = resp['user'][k]
@@ -152,7 +150,7 @@ class RepostTimelineSpider(BaseSpider):
                 user, weibo, retweeted_user = self.resp_to_item(repost)
             except KeyError:
                 continue
-            source_weibo['reposts'].append(weibo)
+            source_weibo['reposts'].append(weibo['id'])
             yield user
             yield weibo
             if retweeted_user is not None:
