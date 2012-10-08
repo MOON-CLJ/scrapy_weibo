@@ -37,12 +37,11 @@ ITEM_PIPELINES = [
 ]
 
 #dev
-
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
 MONGOD_HOST = 'localhost'
 MONGOD_PORT = 27017
-API_KEY = "test"
+API_KEY = "4131380600"
 
 #prod
 """
