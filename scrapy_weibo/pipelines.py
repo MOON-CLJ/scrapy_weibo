@@ -10,6 +10,10 @@ MONGOD_PORT = 27017
 
 
 class MongodbPipeline(object):
+    """
+    insert and update items to mongod
+    """
+
     def __init__(self):
         host = settings.get("MONGOD_HOST", MONGOD_HOST)
         port = settings.get("MONGOD_PORT", MONGOD_PORT)
@@ -37,18 +41,22 @@ class MongodbPipeline(object):
             old_weibo = self.db.master_timeline_weibo.find_one(
                 {'_id': weibo['_id']})
 
+            update_keys = ['reposts_count', 'comments_count', 'attitudes_count']
+            updates = {}
+
+            flag = False
             for more_repost in weibo['reposts']:
                 if more_repost not in old_weibo['reposts']:
                     old_weibo['reposts'].append(more_repost)
+                    flag = True
+            if flag:
+                updates['reposts'] = old_weibo['reposts']
 
-            update_keys = ['reposts_count', 'comments_count', 'attitudes_count']
-            updates = {}
             updates['last_modify'] = time.time()
-            updates['reposts'] = old_weibo['reposts']
             # comments should update
             for key in update_keys:
                 if key in weibo and weibo[key] is not None \
-                        and weibo[key] != old_weibo[key]:
+                        and (key not in old_weibo or weibo[key] != old_weibo[key]):
                     updates[key] = weibo[key]
 
             self.db.master_timeline_weibo.update({'_id': weibo['_id']},
@@ -70,10 +78,28 @@ class MongodbPipeline(object):
                            'statuses_count', 'friends_count', 'profile_image_url',
                            'bi_followers_count', 'verified', 'verified_reason']
             updates = {}
+
+            flag = False
+            for more_follower in user['followers']:
+                if more_follower not in old_user['followers']:
+                    old_user['followers'].append(more_follower)
+                    flag = True
+            if flag:
+                updates['followers'] = old_user['followers']
+
+            flag = False
+            for more_friend in user['friends']:
+                if more_friend not in old_user['friends']:
+                    old_user['friends'].append(more_friend)
+                    flag = True
+            if flag:
+                updates['friends'] = old_user['friends']
+
             updates['last_modify'] = time.time()
+
             for key in update_keys:
                 if key in user and user[key] is not None \
-                        and user[key] != old_user[key]:
+                        and (key not in old_user or user[key] != old_user[key]):
                     updates[key] = user[key]
 
             self.db.master_timeline_user.update({'_id': user['_id']},

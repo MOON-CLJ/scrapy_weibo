@@ -1,5 +1,6 @@
 import time
 from scrapy_weibo.items import WeiboItem, UserItem
+from scrapy.exceptions import DropItem
 
 
 def resp2item(resp):
@@ -8,8 +9,11 @@ def resp2item(resp):
     weibo = WeiboItem()
     user = UserItem()
 
-    if 'deleted' in weibo:
-        raise KeyError
+    if 'deleted' in resp:
+        raise DropItem('deleted')
+
+    if 'reposts_count' not in resp:
+        raise DropItem('reposts_count')
 
     weibo_keys = ['created_at', 'id', 'mid', 'text', 'source', 'reposts_count',
                   'comments_count', 'attitudes_count', 'geo']

@@ -59,7 +59,10 @@ class RequestTokenMiddleware(object):
                 raise CloseSpider('CHECK LIMIT STATUS FAIL')
 
             try:
-                time.sleep(1000)
+                log.msg("token: {token}, sleep one second, wait to check".format(token=token))
+                time.sleep(1)
+                log.msg("now check")
+
                 resp = urllib2.urlopen(LIMIT_URL.format(access_token=token))
                 resp = json.loads(resp.read())
                 reset_time_in = resp['reset_time_in_seconds']

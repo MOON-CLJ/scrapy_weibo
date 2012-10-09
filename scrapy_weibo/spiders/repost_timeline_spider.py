@@ -7,7 +7,7 @@ from scrapy import log
 from scrapy.conf import settings
 from scrapy.exceptions import CloseSpider
 from scrapy.http import Request
-
+from scrapy.exceptions import DropItem
 
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
@@ -40,17 +40,20 @@ class RepostTimelineSpider(BaseSpider):
 
         try:
             user, weibo, retweeted_user = resp2item(resp)
-        except KeyError:
-            retry += 1
-            if retry > 3:
-                return
+        except DropItem, e:
+            if e == 'reposts_count':
+                retry += 1
+                if retry > 3:
+                    return
 
-            request = Request(SOURCE_WEIBO_URL.format(id=wid), headers=None,
-                              callback=self.soucre_weibo, dont_filter=True)
+                request = Request(SOURCE_WEIBO_URL.format(id=wid), headers=None,
+                                  callback=self.soucre_weibo, dont_filter=True)
 
-            request.meta['retry'] = retry
-            request.meta['wid'] = wid
-            yield request
+                request.meta['retry'] = retry
+                request.meta['wid'] = wid
+                yield request
+
+            return
 
         yield user
         yield weibo
@@ -80,7 +83,7 @@ class RepostTimelineSpider(BaseSpider):
         if "error_code" in resp and resp["error_code"] in [21314, 21315, 21316, 21317]:
             raise CloseSpider('ERROR: TOKEN NOT VALID')
 
-        if 'reposts' in resp and resp['reposts'] == []:
+        if 'reposts' not in resp or len(resp['reposts']) == 0:
             retry += 1
             if retry > 3:
                 return
@@ -98,7 +101,7 @@ class RepostTimelineSpider(BaseSpider):
         for repost in resp['reposts']:
             try:
                 user, weibo, retweeted_user = resp2item(repost)
-            except KeyError:
+            except DropItem:
                 continue
             source_weibo['reposts'].append(weibo['id'])
             yield user
