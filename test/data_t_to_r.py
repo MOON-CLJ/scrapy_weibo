@@ -21,8 +21,8 @@ def txt_to_redis(host, port, uids_set, tokens_set):
 
 
 if __name__ == "__main__":
-    host = 'localhost'
-    #host = '219.224.135.60'
+    #host = 'localhost'
+    host = '219.224.135.60'
     port = 6379
     uids_set = "repost_timeline:weiboids"
     tokens_set = "4131380600:tokens"
