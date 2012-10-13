@@ -38,12 +38,26 @@ class RepostTimelineSpider(BaseSpider):
         if "error_code" in resp and resp["error_code"] in [21314, 21315, 21316, 21317]:
             raise CloseSpider('ERROR: TOKEN NOT VALID')
 
+        if not (200 <= response.status < 300):
+            retry += 1
+            if retry > 2:
+                return
+
+            request = Request(SOURCE_WEIBO_URL.format(id=wid), headers=None,
+                              callback=self.soucre_weibo, dont_filter=True)
+
+            request.meta['retry'] = retry
+            request.meta['wid'] = wid
+            yield request
+
+            return
+
         try:
             user, weibo, retweeted_user = resp2item(resp)
         except DropItem, e:
             if e == 'reposts_count':
                 retry += 1
-                if retry > 3:
+                if retry > 2:
                     return
 
                 request = Request(SOURCE_WEIBO_URL.format(id=wid), headers=None,
@@ -83,9 +97,9 @@ class RepostTimelineSpider(BaseSpider):
         if "error_code" in resp and resp["error_code"] in [21314, 21315, 21316, 21317]:
             raise CloseSpider('ERROR: TOKEN NOT VALID')
 
-        if 'reposts' not in resp or len(resp['reposts']) == 0:
+        if not (200 <= response.status < 300) or 'reposts' not in resp or len(resp['reposts']) == 0:
             retry += 1
-            if retry > 3:
+            if retry > 2:
                 return
             request = Request(BASE_URL.format(id=wid, page=page), headers=None,
                               callback=self.more_reposts, dont_filter=True)
