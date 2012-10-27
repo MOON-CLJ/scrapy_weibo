@@ -2,7 +2,7 @@ import pymongo
 import time
 from scrapy.conf import settings
 from scrapy import log
-from scrapy_weibo.items import WeiboItem, UserItem
+from utils4scrapy.items import WeiboItem, UserItem
 
 
 MONGOD_HOST = 'localhost'
