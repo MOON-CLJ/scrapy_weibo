@@ -25,7 +25,6 @@ class PublicTimelineSpider(BaseSpider):
             except DropItem:
                 continue
 
-            print user, weibo
             yield user
             yield weibo
             if retweeted_user is not None:
