@@ -13,6 +13,7 @@ class UserItem(Item):
     description = Field()
     verified = Field()
     verified_reason = Field()
+    verified_type = Field()
     followers_count = Field()  # 粉丝数
     statuses_count = Field()
     friends_count = Field()  # 关注数

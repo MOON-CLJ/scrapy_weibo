@@ -76,7 +76,7 @@ class MongodbPipeline(object):
             update_keys = ['name', 'gender', 'province', 'city',
                            'location', 'description', 'verified', 'followers_count',
                            'statuses_count', 'friends_count', 'profile_image_url',
-                           'bi_followers_count', 'verified', 'verified_reason']
+                           'bi_followers_count', 'verified', 'verified_reason', 'verified_type']
             updates = {}
 
             flag = False

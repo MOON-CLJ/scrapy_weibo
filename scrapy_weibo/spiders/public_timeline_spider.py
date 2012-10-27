@@ -1,6 +1,6 @@
 import simplejson as json
 from scrapy.spider import BaseSpider
-from scrapy_weibo.utils import resp2item
+from utils4scrapy.utils import resp2item
 from scrapy.exceptions import DropItem
 
 
