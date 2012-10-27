@@ -39,7 +39,7 @@ DOWNLOADER_MIDDLEWARES = {
 }
 
 ITEM_PIPELINES = [
-    'scrapy_weibo.pipelines.MongodbPipeline',
+    'utils4scrapy.pipelines.MongodbPipeline',
 ]
 
 #dev
