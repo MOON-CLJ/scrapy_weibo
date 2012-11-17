@@ -48,7 +48,7 @@ REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
 MONGOD_HOST = 'localhost'
 MONGOD_PORT = 27017
-API_KEY = "4131380600"
+API_KEY = "1966311272"
 """
 
 #prod
