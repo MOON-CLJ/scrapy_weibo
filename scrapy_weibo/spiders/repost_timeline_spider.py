@@ -2,7 +2,7 @@ import math
 import simplejson as json
 from scrapy.spider import BaseSpider
 from utils4scrapy.utils import resp2item
-from utils4scrapy.tk_maintain import _default_redis, \
+from utils4scrapy.tk_maintain import _default_redis, _default_req_count, _default_tk_alive, \
     EXPIRED_TOKEN, INVALID_ACCESS_TOKEN
 from scrapy import log
 from scrapy.conf import settings
@@ -38,6 +38,10 @@ class RepostTimelineSpider(BaseSpider):
         resp = json.loads(response.body)
         if response.status != 200:
             if resp.get('error_code') in [EXPIRED_TOKEN, INVALID_ACCESS_TOKEN]:
+                token = response.request.headers['Authorization'][7:]
+                _default_req_count(r=self.r).delete(token)
+                _default_tk_alive(r=self.r).drop_tk(token)
+
                 retry += 1
                 if retry > 2:
                     return
@@ -97,6 +101,12 @@ class RepostTimelineSpider(BaseSpider):
 
         if response.status != 200 and resp.get('error_code') in [EXPIRED_TOKEN, INVALID_ACCESS_TOKEN] \
                 or 'reposts' not in resp or resp['reposts'] == []:
+
+            if response.status != 200 and resp.get('error_code') in [EXPIRED_TOKEN, INVALID_ACCESS_TOKEN]:
+                token = response.request.headers['Authorization'][7:]
+                _default_req_count(r=self.r).delete(token)
+                _default_tk_alive(r=self.r).drop_tk(token)
+
             retry += 1
             if retry > 2:
                 return
@@ -132,9 +142,9 @@ class RepostTimelineSpider(BaseSpider):
         self.r = _default_redis(host, port)
 
         weiboids_set = WEIBOIDS_SET.format(spider=self.name)
-        log.msg("load weiboids from {weiboids_set}".format(weiboids_set=weiboids_set), level=log.INFO)
+        log.msg('load weiboids from {weiboids_set}'.format(weiboids_set=weiboids_set), level=log.INFO)
         weiboids = self.r.smembers(weiboids_set)
         if weiboids == []:
-            log.msg("{spider}: NO WEIBO IDS TO LOAD".format(spider=self.name), level=log.WARNING)
+            log.msg('{spider}: NO WEIBO IDS TO LOAD'.format(spider=self.name), level=log.WARNING)
 
         return weiboids
