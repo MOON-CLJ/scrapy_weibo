@@ -4,8 +4,6 @@ from utils4scrapy.utils import resp2item
 from scrapy.exceptions import DropItem
 
 
-REDIS_HOST = 'localhost'
-REDIS_PORT = 6379
 BASE_URL = 'https://api.weibo.com/2/statuses/public_timeline.json?count=200'
 
 
@@ -15,7 +13,7 @@ class PublicTimelineSpider(BaseSpider):
     start_urls = [BASE_URL]
 
     def parse(self, response):
-        if not (200 <= response.status < 300):
+        if response.status != 200:
             return
 
         resp = json.loads(response.body)

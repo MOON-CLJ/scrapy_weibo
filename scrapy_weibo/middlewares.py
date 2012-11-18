@@ -1,49 +1,33 @@
-import redis
-import pymongo
 import time
 from scrapy import log
 from scrapy.conf import settings
-from utils4scrapy.req_count import ReqCount
-from utils4scrapy.tk_alive import TkAlive
 from utils4scrapy.tk_maintain import token_status, one_valid_token, \
+    _default_redis, _default_req_count, _default_tk_alive, \
     HOURS_LIMIT, EXPIRED_TOKEN, INVALID_ACCESS_TOKEN
 
 
 # weibo apis default extras config
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
-MONGOD_HOST = 'localhost'
-MONGOD_PORT = 27017
-API_KEY = 'test'
+API_KEY = '4131380600'
 BUFFER_SIZE = 100
 
 
 class RequestTokenMiddleware(object):
     def __init__(self):
-        host = settings.get("REDIS_HOST", REDIS_HOST)
-        port = settings.get("REDIS_PORT", REDIS_PORT)
         api_key = settings.get("API_KEY", API_KEY)
         self.api_key = api_key
+
+        host = settings.get("REDIS_HOST", REDIS_HOST)
+        port = settings.get("REDIS_PORT", REDIS_PORT)
         log.msg('[Request token middleware] Redis connect to {host}:{port}'.format(host=host, port=port), level=log.WARNING)
-        r = redis.Redis(host, port)
-        self.r = r
+        self.r = _default_redis(host, port)
 
-        host = settings.get("MONGOD_HOST", MONGOD_HOST)
-        port = settings.get("MONGOD_PORT", MONGOD_PORT)
-        connection = pymongo.Connection(host, port)
-        db = connection.admin
-        db.authenticate('root', 'root')
-        log.msg('Mongod connect to {host}:{port}'.format(host=host, port=port), level=log.WARNING)
-
-        db = connection.simple
-        self.db = db
-
-        self.req_count = ReqCount(r, api_key)
-        self.tk_alive = TkAlive(r, api_key)
+        self.req_count = _default_req_count(self.r, self.api_key)
+        self.tk_alive = _default_tk_alive(self.r, self.api_key)
 
     def process_request(self, request, spider):
         token, used = one_valid_token(self.req_count, self.tk_alive)
-        print token, used
 
         if used > HOURS_LIMIT - BUFFER_SIZE:
             while 1:

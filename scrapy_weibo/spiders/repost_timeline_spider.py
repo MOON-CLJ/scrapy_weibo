@@ -1,8 +1,9 @@
-import redis
 import math
 import simplejson as json
 from scrapy.spider import BaseSpider
-from scrapy_weibo.utils import resp2item
+from utils4scrapy.utils import resp2item
+from utils4scrapy.tk_maintain import _default_redis, \
+    EXPIRED_TOKEN, INVALID_ACCESS_TOKEN
 from scrapy import log
 from scrapy.conf import settings
 from scrapy.exceptions import CloseSpider
@@ -35,22 +36,22 @@ class RepostTimelineSpider(BaseSpider):
         retry = response.meta['retry']
         wid = response.meta['wid']
         resp = json.loads(response.body)
-        if "error_code" in resp and resp["error_code"] in [21314, 21315, 21316, 21317]:
-            raise CloseSpider('ERROR: TOKEN NOT VALID')
+        if response.status != 200:
+            if resp.get('error_code') in [EXPIRED_TOKEN, INVALID_ACCESS_TOKEN]:
+                retry += 1
+                if retry > 2:
+                    return
 
-        if not (200 <= response.status < 300):
-            retry += 1
-            if retry > 2:
+                request = Request(SOURCE_WEIBO_URL.format(id=wid), headers=None,
+                                  callback=self.soucre_weibo, dont_filter=True)
+
+                request.meta['retry'] = retry
+                request.meta['wid'] = wid
+                yield request
+
                 return
-
-            request = Request(SOURCE_WEIBO_URL.format(id=wid), headers=None,
-                              callback=self.soucre_weibo, dont_filter=True)
-
-            request.meta['retry'] = retry
-            request.meta['wid'] = wid
-            yield request
-
-            return
+            else:
+                raise CloseSpider(resp['error'])
 
         try:
             user, weibo, retweeted_user = resp2item(resp)
@@ -94,10 +95,8 @@ class RepostTimelineSpider(BaseSpider):
         wid = response.meta['wid']
         source_weibo = response.meta['source_weibo']
 
-        if "error_code" in resp and resp["error_code"] in [21314, 21315, 21316, 21317]:
-            raise CloseSpider('ERROR: TOKEN NOT VALID')
-
-        if not (200 <= response.status < 300) or 'reposts' not in resp or len(resp['reposts']) == 0:
+        if response.status != 200 and resp.get('error_code') in [EXPIRED_TOKEN, INVALID_ACCESS_TOKEN] \
+                or 'reposts' not in resp or resp['reposts'] == []:
             retry += 1
             if retry > 2:
                 return
@@ -111,6 +110,8 @@ class RepostTimelineSpider(BaseSpider):
 
             yield request
             return
+        elif response.status != 200:
+            raise CloseSpider(resp['error'])
 
         for repost in resp['reposts']:
             try:
@@ -128,13 +129,12 @@ class RepostTimelineSpider(BaseSpider):
     def prepare(self):
         host = settings.get("REDIS_HOST", REDIS_HOST)
         port = settings.get("REDIS_PORT", REDIS_PORT)
+        self.r = _default_redis(host, port)
+
         weiboids_set = WEIBOIDS_SET.format(spider=self.name)
-
-        self.r = redis.Redis(host, port)
-
         log.msg("load weiboids from {weiboids_set}".format(weiboids_set=weiboids_set), level=log.INFO)
         weiboids = self.r.smembers(weiboids_set)
-        if len(weiboids) == 0:
+        if weiboids == []:
             log.msg("{spider}: NO WEIBO IDS TO LOAD".format(spider=self.name), level=log.WARNING)
 
         return weiboids
