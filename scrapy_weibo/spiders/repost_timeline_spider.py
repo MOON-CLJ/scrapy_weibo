@@ -1,14 +1,15 @@
+# -*- coding: utf-8 -*-
+
 import math
 import simplejson as json
 from scrapy.spider import BaseSpider
-from utils4scrapy.utils import resp2item
+from utils4scrapy.utils import resp2item_v2
 from utils4scrapy.tk_maintain import _default_redis, _default_req_count, _default_tk_alive, \
     EXPIRED_TOKEN, INVALID_ACCESS_TOKEN
 from scrapy import log
 from scrapy.conf import settings
 from scrapy.exceptions import CloseSpider
 from scrapy.http import Request
-from scrapy.exceptions import DropItem
 
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
@@ -57,28 +58,25 @@ class RepostTimelineSpider(BaseSpider):
             else:
                 raise CloseSpider(resp['error'])
 
-        try:
-            user, weibo, retweeted_user = resp2item(resp)
-        except DropItem, e:
-            if e == 'reposts_count':
-                retry += 1
-                if retry > 2:
-                    return
+        items = resp2item_v2(resp)
+        if len(items) < 2:
+            retry += 1
+            if retry > 2:
+                return
 
-                request = Request(SOURCE_WEIBO_URL.format(id=wid), headers=None,
-                                  callback=self.soucre_weibo, dont_filter=True)
+            request = Request(SOURCE_WEIBO_URL.format(id=wid), headers=None,
+                              callback=self.soucre_weibo, dont_filter=True)
 
-                request.meta['retry'] = retry
-                request.meta['wid'] = wid
-                yield request
+            request.meta['retry'] = retry
+            request.meta['wid'] = wid
+            yield request
 
             return
 
-        yield user
-        yield weibo
-        if retweeted_user is not None:
-            yield retweeted_user
+        for item in items:
+            yield item
 
+        weibo = items[0]
         reposts_count = weibo['reposts_count']
         wid = weibo['id']
         for i in range(1, int(math.ceil(reposts_count / 200.0)) + 1):
@@ -124,15 +122,13 @@ class RepostTimelineSpider(BaseSpider):
             raise CloseSpider(resp['error'])
 
         for repost in resp['reposts']:
-            try:
-                user, weibo, retweeted_user = resp2item(repost)
-            except DropItem:
+            items = resp2item_v2(repost)
+            if items == []:
                 continue
+            weibo = items[0]  # 取出转发微博
             source_weibo['reposts'].append(weibo['id'])
-            yield user
-            yield weibo
-            if retweeted_user is not None:
-                yield retweeted_user
+            for item in items:
+                yield item
 
         yield source_weibo
 

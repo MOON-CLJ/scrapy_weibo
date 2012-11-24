@@ -1,7 +1,6 @@
 import simplejson as json
 from scrapy.spider import BaseSpider
-from utils4scrapy.utils import resp2item
-from scrapy.exceptions import DropItem
+from utils4scrapy.utils import resp2item_v2
 
 
 BASE_URL = 'https://api.weibo.com/2/statuses/public_timeline.json?count=200'
@@ -18,12 +17,6 @@ class PublicTimelineSpider(BaseSpider):
 
         resp = json.loads(response.body)
         for status in resp['statuses']:
-            try:
-                user, weibo, retweeted_user = resp2item(status)
-            except DropItem:
-                continue
-
-            yield user
-            yield weibo
-            if retweeted_user is not None:
-                yield retweeted_user
+            items = resp2item_v2(status)
+            for item in items:
+                yield item
