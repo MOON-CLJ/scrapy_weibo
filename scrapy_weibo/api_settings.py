@@ -34,7 +34,7 @@ SPIDER_MIDDLEWARES = {
 DOWNLOADER_MIDDLEWARES = {
     'scrapy.contrib.downloadermiddleware.robotstxt.RobotsTxtMiddleware': None,
     'scrapy.contrib.downloadermiddleware.httpauth.HttpAuthMiddleware': None,
-    'scrapy_weibo.middlewares.RequestTokenMiddleware': 300,
+    'utils4scrapy.middlewares.RequestTokenMiddleware': 300,
     'scrapy.contrib.downloadermiddleware.defaultheaders.DefaultHeadersMiddleware': None,
 }
 
