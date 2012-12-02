@@ -1,15 +1,27 @@
 import redis
 
 
-def txt_to_redis(host, port, uids_set, tokens_set):
+def txt_to_redis(host, port, uids_set):
     r = redis.Redis(host, port)
-
+    """
     pipe = r.pipeline()
     pipe.multi()
     with open('weibo_mid_list.txt') as f:
         for line in f:
             print line.split()[0]
             pipe.sadd(uids_set, line.split()[0])
+    pipe.execute()
+    """
+    pipe = r.pipeline()
+    pipe.multi()
+    with open('uids_for_friends.txt') as f:
+        count = 0
+        for line in f:
+            if count > 3:
+                break
+            print line.split()[0]
+            pipe.sadd(uids_set, line.split()[0])
+            count += 1
     pipe.execute()
 
     """
@@ -23,9 +35,10 @@ def txt_to_redis(host, port, uids_set, tokens_set):
 
 
 if __name__ == "__main__":
-    #host = 'localhost'
-    host = '219.224.135.60'
+    host = 'localhost'
+    #host = '219.224.135.60'
     port = 6379
-    uids_set = "repost_timeline:weiboids"
-    tokens_set = "4131380600:tokens"
-    txt_to_redis(host, port, uids_set, tokens_set)
+    #uids_set = "repost_timeline:weiboids"
+    #uids_set = "friends:uids_for_friends"
+    uids_set = "friends_uids:uids_for_friends"
+    txt_to_redis(host, port, uids_set)
