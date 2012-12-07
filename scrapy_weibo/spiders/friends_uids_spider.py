@@ -41,7 +41,6 @@ class FriendsUidSpider(BaseSpider):
         if response.status != 200:
             if resp.get('error_code') in [EXPIRED_TOKEN, INVALID_ACCESS_TOKEN]:
                 token = response.request.headers['Authorization'][7:]
-
                 self.req_count.delete(token)
                 self.tk_alive.drop_tk(token)
 

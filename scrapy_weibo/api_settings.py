@@ -1,20 +1,5 @@
 from settings import *
 
-"""
-Add token:
-    redis 127.0.0.1:6379> del 4131380600:tokens
-    (integer) 1
-    redis 127.0.0.1:6379> zrange 4131380600:tokens 0 -1 WITHSCORES
-    (empty list or set)
-    redis 127.0.0.1:6379> zadd 4131380600:tokens 0 2.0064O3zByoqaVEf6ed046d81FI2NMB
-    (integer) 1
-    redis 127.0.0.1:6379> zrange 4131380600:tokens 0 -1 WITHSCORES
-    1) "2.0064O3zByoqaVEf6ed046d81FI2NMB"
-    2) "0"
-
-Add uids:
-test/data_t_to_r.py
-"""
 
 # enables scheduling storing requests queue in redis
 SCHEDULER = "scrapy_redis.scheduler.Scheduler"
