@@ -1,7 +1,6 @@
 #-*-coding:utf-8-*-
 """friends_uids_spider"""
 
-import redis
 import simplejson as json
 from scrapy.spider import BaseSpider
 from utils4scrapy.utils import resp2item_v2
@@ -11,69 +10,76 @@ from scrapy import log
 from scrapy.conf import settings
 from scrapy.exceptions import CloseSpider
 from scrapy.http import Request
-from utils4scrapy.utils import local2unix
 
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
+API_KEY = '4131380600'
 UIDS_SET = '{spider}:uids_for_friends'
 FRIENDS_URL = 'https://api.weibo.com/2/friendships/friends/ids.json?uid={uid}&cursor={cursor}&count=5000'
 SOURCE_USER_URL = 'https://api.weibo.com/2/users/show.json?uid={uid}'
 
+
 class FriendsUidSpider(BaseSpider):
     name = 'friends_uids'
     r = None
+    handle_httpstatus_list = [403]
 
     def start_requests(self):
-        uid_seeds = self.prepare()
+        uids = self.prepare()
 
-        for sid in uid_seeds:
-            request = Request(SOURCE_USER_URL.format(uid=sid), headers=None,
+        for uid in uids:
+            request = Request(SOURCE_USER_URL.format(uid=uid), headers=None,
                               callback=self.source_user)
             request.meta['retry'] = 0
-            request.meta['sid'] = sid
+            request.meta['uid'] = uid
             yield request
 
     def source_user(self, response):
         retry = response.meta['retry']
-        sid = response.meta['sid']
+        uid = response.meta['uid']
         resp = json.loads(response.body)
         if response.status != 200:
             if resp.get('error_code') in [EXPIRED_TOKEN, INVALID_ACCESS_TOKEN]:
                 token = response.request.headers['Authorization'][7:]
-                _default_req_count(r=self.r).delete(token)
-                _default_tk_alive(r=self.r).drop_tk(token)
+
+                self.req_count.delete(token)
+                self.tk_alive.drop_tk(token)
 
                 retry += 1
                 if retry > 2:
                     return
 
-                request = Request(SOURCE_USER_URL.format(uid=sid), headers=None,callback=self.source_user, dont_filter=True)
+                request = Request(SOURCE_USER_URL.format(uid=uid), headers=None,
+                                  callback=self.source_user, dont_filter=True)
 
                 request.meta['retry'] = retry
-                request.meta['sid'] = sid
+                request.meta['uid'] = uid
                 yield request
 
                 return
             else:
                 raise CloseSpider(resp['error'])
 
-	items = resp2item_v2(resp)
+        items = resp2item_v2(resp)
         if len(items) < 2:
-	    retry += 1
-	    if retry > 2:
-	        return
+            retry += 1
+            if retry > 2:
+                return
 
-	    request = Request(SOURCE_USER_URL.format(uid=sid), headers=None, callback=self.soucre_user, dont_filter=True)
+            request = Request(SOURCE_USER_URL.format(uid=uid), headers=None,
+                              callback=self.soucre_user, dont_filter=True)
 
-	    request.meta['retry'] = retry
-	    request.meta['sid'] = sid
-	    yield request
+            request.meta['retry'] = retry
+            request.meta['uid'] = uid
+            yield request
 
-	    return
+            return
+
         user = items[0]
-        request = Request(FRIENDS_URL.format(uid=sid, cursor=0), headers=None, callback=self.friends)
+        request = Request(FRIENDS_URL.format(uid=uid, cursor=0), headers=None,
+                          callback=self.more_friends)
         request.meta['retry'] = 0
-        request.meta['sid'] = sid
+        request.meta['uid'] = uid
         request.meta['cursor'] = 0
         request.meta['source_user'] = user
         yield request
@@ -81,26 +87,28 @@ class FriendsUidSpider(BaseSpider):
         for item in items:
             yield item
 
-    def friends(self, response):
+    def more_friends(self, response):
         retry = response.meta['retry']
-        sid = response.meta['sid']
+        uid = response.meta['uid']
         cursor = response.meta['cursor']
         source_user = response.meta['source_user']
         resp = json.loads(response.body)
+
         if response.status != 200:
             if resp.get('error_code') in [EXPIRED_TOKEN, INVALID_ACCESS_TOKEN]:
                 token = response.request.headers['Authorization'][7:]
-                _default_req_count(r=self.r).delete(token)
-                _default_tk_alive(r=self.r).drop_tk(token)
+                self.req_count.delete(token)
+                self.tk_alive.drop_tk(token)
 
                 retry += 1
                 if retry > 2:
                     return
 
-                request = Request(FRIENDS_URL.format(uid=sid, cursor=cursor), headers=None,callback=self.friends, dont_filter=True)
+                request = Request(FRIENDS_URL.format(uid=uid, cursor=cursor), headers=None,
+                                  callback=self.more_friends, dont_filter=True)
 
                 request.meta['retry'] = retry
-                request.meta['sid'] = sid
+                request.meta['uid'] = uid
                 request.meta['cursor'] = cursor
                 request.meta['source_user'] = source_user
 
@@ -110,13 +118,14 @@ class FriendsUidSpider(BaseSpider):
                 raise CloseSpider(resp['error'])
 
         for friend_id in resp['ids']:
-	    source_user['friends'].append(int(friend_id))
-	
+            source_user['friends'].append(friend_id)
+
         next_cursor = resp['next_cursor']
         if next_cursor != 0:
-            request = Request(FRIENDS_URL.format(uid=sid, cursor=next_cursor), headers=None, callback=self.friends, dont_filter=True)
-            request.meta['retry'] = retry
-            request.meta['sid'] = sid
+            request = Request(FRIENDS_URL.format(uid=uid, cursor=next_cursor), headers=None,
+                              callback=self.more_friends, dont_filter=True)
+            request.meta['retry'] = 0
+            request.meta['uid'] = uid
             request.meta['cursor'] = next_cursor
             request.meta['source_user'] = source_user
 
@@ -127,13 +136,15 @@ class FriendsUidSpider(BaseSpider):
     def prepare(self):
         host = settings.get("REDIS_HOST", REDIS_HOST)
         port = settings.get("REDIS_PORT", REDIS_PORT)
+        api_key = settings.get("API_KEY", API_KEY)
+        self.r = _default_redis(host, port)
+        self.req_count = _default_req_count(r=self.r, api_key=api_key)
+        self.tk_alive = _default_tk_alive(r=self.r, api_key=api_key)
+
         uids_set = UIDS_SET.format(spider=self.name)
-
-        self.r = redis.Redis(host, port)
-
         log.msg("load uids from {uids_set}".format(uids_set=uids_set), level=log.INFO)
         uids = self.r.smembers(uids_set)
-        if len(uids) == 0:
+        if uids == []:
             log.msg("{spider}: NO USER IDS TO LOAD".format(spider=self.name), level=log.WARNING)
-        print uids
+
         return uids

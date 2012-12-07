@@ -4,6 +4,7 @@ import redis
 def txt_to_redis(host, port, uids_set):
     r = redis.Redis(host, port)
     """
+    # set
     pipe = r.pipeline()
     pipe.multi()
     with open('weibo_mid_list.txt') as f:
@@ -12,16 +13,14 @@ def txt_to_redis(host, port, uids_set):
             pipe.sadd(uids_set, line.split()[0])
     pipe.execute()
     """
+
+    # sorted set
     pipe = r.pipeline()
     pipe.multi()
     with open('uids_for_friends.txt') as f:
-        count = 0
         for line in f:
-            if count > 3:
-                break
             print line.split()[0]
             pipe.sadd(uids_set, line.split()[0])
-            count += 1
     pipe.execute()
 
     """
