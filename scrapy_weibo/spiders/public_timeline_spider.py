@@ -12,9 +12,7 @@ class PublicTimelineSpider(BaseSpider):
     start_urls = [BASE_URL]
 
     def parse(self, response):
-        if response.status != 200:
-            return
-
+        # scrapy auto handle not 200-300 status
         resp = json.loads(response.body)
         for status in resp['statuses']:
             items = resp2item_v2(status)
