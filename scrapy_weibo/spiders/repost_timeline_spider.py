@@ -13,6 +13,7 @@ from scrapy.http import Request
 
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
+API_KEY = '4131380600'
 WEIBOIDS_SET = '{spider}:weiboids'
 BASE_URL = 'https://api.weibo.com/2/statuses/repost_timeline.json?id={id}&page={page}&count=200'
 SOURCE_WEIBO_URL = 'https://api.weibo.com/2/statuses/show.json?id={id}'
@@ -21,6 +22,7 @@ SOURCE_WEIBO_URL = 'https://api.weibo.com/2/statuses/show.json?id={id}'
 class RepostTimelineSpider(BaseSpider):
     name = 'repost_timeline'
     r = None
+    handle_httpstatus_list = [403]
 
     def start_requests(self):
         wids = self.prepare()
@@ -40,8 +42,8 @@ class RepostTimelineSpider(BaseSpider):
         if response.status != 200:
             if resp.get('error_code') in [EXPIRED_TOKEN, INVALID_ACCESS_TOKEN]:
                 token = response.request.headers['Authorization'][7:]
-                _default_req_count(r=self.r).delete(token)
-                _default_tk_alive(r=self.r).drop_tk(token)
+                self.req_count.delete(token)
+                self.tk_alive.drop_tk(token)
 
                 retry += 1
                 if retry > 2:
@@ -102,8 +104,8 @@ class RepostTimelineSpider(BaseSpider):
 
             if response.status != 200 and resp.get('error_code') in [EXPIRED_TOKEN, INVALID_ACCESS_TOKEN]:
                 token = response.request.headers['Authorization'][7:]
-                _default_req_count(r=self.r).delete(token)
-                _default_tk_alive(r=self.r).drop_tk(token)
+                self.req_count.delete(token)
+                self.tk_alive.drop_tk(token)
 
             retry += 1
             if retry > 2:
@@ -135,7 +137,10 @@ class RepostTimelineSpider(BaseSpider):
     def prepare(self):
         host = settings.get("REDIS_HOST", REDIS_HOST)
         port = settings.get("REDIS_PORT", REDIS_PORT)
+        api_key = settings.get("API_KEY", API_KEY)
         self.r = _default_redis(host, port)
+        self.req_count = _default_req_count(r=self.r, api_key=api_key)
+        self.tk_alive = _default_tk_alive(r=self.r, api_key=api_key)
 
         weiboids_set = WEIBOIDS_SET.format(spider=self.name)
         log.msg('load weiboids from {weiboids_set}'.format(weiboids_set=weiboids_set), level=log.INFO)
