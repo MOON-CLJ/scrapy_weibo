@@ -21,11 +21,17 @@ DOWNLOADER_MIDDLEWARES = {
     'scrapy.contrib.downloadermiddleware.httpauth.HttpAuthMiddleware': None,
     'utils4scrapy.middlewares.RequestTokenMiddleware': 300,
     'scrapy.contrib.downloadermiddleware.defaultheaders.DefaultHeadersMiddleware': None,
+    'scrapy.contrib.downloadermiddleware.useragent.UserAgentMiddleware': None,
 }
 
 ITEM_PIPELINES = [
     'utils4scrapy.pipelines.MongodbPipeline',
 ]
+
+EXTENSIONS = {
+    'scrapy.webservice.WebService': None,
+    'scrapy.telnet.TelnetConsole': None,
+}
 
 #dev
 """
