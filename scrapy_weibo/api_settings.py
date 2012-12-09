@@ -9,6 +9,7 @@ SCHEDULER_PERSIST = True
 SCHEDULER_REFRESH = True
 
 DOWNLOAD_DELAY = 2
+REDIRECT_ENABLED = False
 
 SPIDER_MIDDLEWARES = {
     'scrapy.contrib.spidermiddleware.offsite.OffsiteMiddleware': None,
