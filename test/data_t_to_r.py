@@ -3,6 +3,7 @@ import redis
 
 def txt_to_redis(host, port, uids_set):
     r = redis.Redis(host, port)
+    r.delete(uids_set)
     """
     # set
     pipe = r.pipeline()
