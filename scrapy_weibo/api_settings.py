@@ -20,9 +20,11 @@ SPIDER_MIDDLEWARES = {
 DOWNLOADER_MIDDLEWARES = {
     'scrapy.contrib.downloadermiddleware.robotstxt.RobotsTxtMiddleware': None,
     'scrapy.contrib.downloadermiddleware.httpauth.HttpAuthMiddleware': None,
-    'utils4scrapy.middlewares.RequestTokenMiddleware': 300,
-    'scrapy.contrib.downloadermiddleware.defaultheaders.DefaultHeadersMiddleware': None,
+    'utils4scrapy.middlewares.RequestTokenMiddleware': 310,
     'scrapy.contrib.downloadermiddleware.useragent.UserAgentMiddleware': None,
+    'scrapy.contrib.downloadermiddleware.defaultheaders.DefaultHeadersMiddleware': None,
+    'scrapy.contrib.downloadermiddleware.cookies.CookiesMiddleware': None,
+    'scrapy.contrib.downloadermiddleware.httpproxy.HttpProxyMiddleware': None,
 }
 
 ITEM_PIPELINES = [
