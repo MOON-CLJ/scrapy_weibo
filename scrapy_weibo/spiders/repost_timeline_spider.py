@@ -19,7 +19,6 @@ SOURCE_WEIBO_URL = 'https://api.weibo.com/2/statuses/show.json?id={id}'
 
 class RepostTimelineSpider(BaseSpider):
     name = 'repost_timeline'
-    r = None
 
     def start_requests(self):
         wids = self.prepare()
@@ -85,8 +84,8 @@ class RepostTimelineSpider(BaseSpider):
         yield source_weibo
 
     def prepare(self):
-        host = settings.get("REDIS_HOST", REDIS_HOST)
-        port = settings.get("REDIS_PORT", REDIS_PORT)
+        host = settings.get('REDIS_HOST', REDIS_HOST)
+        port = settings.get('REDIS_PORT', REDIS_PORT)
         self.r = _default_redis(host, port)
 
         weiboids_set = WEIBOIDS_SET.format(spider=self.name)
