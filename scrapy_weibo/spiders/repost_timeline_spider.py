@@ -35,7 +35,9 @@ class RepostTimelineSpider(BaseSpider):
         resp = json.loads(response.body)
 
         items = resp2item_v2(resp)
-        if len(items) < 2 and retries <= 3:
+        if len(items) < 2:
+            if retries > 2:
+                return
             retryreq = response.request.copy()
             retryreq.meta['retry_times'] = retries
             retryreq.dont_filter = True
@@ -64,7 +66,9 @@ class RepostTimelineSpider(BaseSpider):
         source_weibo = response.meta['source_weibo']
         resp = json.loads(response.body)
 
-        if resp['reposts'] == [] and retries <= 3:
+        if resp['reposts'] == []:
+            if retries > 2:
+                return
             retryreq = response.request.copy()
             retryreq.meta['retry_times'] = retries
             retryreq.dont_filter = True
