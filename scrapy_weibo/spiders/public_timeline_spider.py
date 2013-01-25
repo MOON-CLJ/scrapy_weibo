@@ -13,7 +13,9 @@ class PublicTimelineSpider(BaseSpider):
 
     def parse(self, response):
         resp = json.loads(response.body)
+        results = []
         for status in resp['statuses']:
             items = resp2item_v2(status)
-            for item in items:
-                yield item
+            results.extend(items)
+
+        return results

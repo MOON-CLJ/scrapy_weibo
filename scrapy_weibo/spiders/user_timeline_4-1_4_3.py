@@ -4,6 +4,7 @@ import simplejson as json
 from scrapy.spider import BaseSpider
 from utils4scrapy.utils import resp2item_v2
 from utils4scrapy.tk_maintain import _default_redis
+from utils4scrapy.middlewares import ShouldNotEmptyError
 from scrapy import log
 from scrapy.conf import settings
 from scrapy.http import Request
@@ -17,9 +18,12 @@ BASE_URL = 'https://api.weibo.com/2/statuses/user_timeline.json?uid={uid}&page={
 
 
 class UserTimelineApril(BaseSpider):
+    """usage: scrapy crawl user_timeline_april -a since_id=3421438975589423 -a max_id=3438780670993204"""
     name = 'user_timeline_april'
-    since_id = 3513504881782892
-    max_id = 3523483302151071
+
+    def __init__(self, since_id, max_id):
+        self.since_id = int(since_id)
+        self.max_id = int(max_id)
 
     def start_requests(self):
         uids = self.prepare()
@@ -33,18 +37,28 @@ class UserTimelineApril(BaseSpider):
             yield request
 
     def parse(self, response):
+        page = response.meta['page']
+        uid = response.meta['uid']
+
         resp = json.loads(response.body)
 
         if resp.get('statuses') == []:
-            return
+            raise ShouldNotEmptyError()
+
+        results = []
         for status in resp['statuses']:
             items = resp2item_v2(status)
-            for item in items:
-                yield item
+            results.extend(items)
 
-        request = response.request.copy()
-        request.meta['page'] += 1
-        yield request
+        page += 1
+        request = Request(BASE_URL.format(uid=uid, page=page,
+                          since_id=self.since_id, max_id=self.max_id), headers=None)
+        request.meta['page'] = page
+        request.meta['uid'] = uid
+
+        results.append(request)
+
+        return results
 
     def prepare(self):
         host = settings.get('REDIS_HOST', REDIS_HOST)
