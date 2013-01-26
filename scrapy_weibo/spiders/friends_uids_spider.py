@@ -5,6 +5,7 @@ import simplejson as json
 from scrapy.spider import BaseSpider
 from utils4scrapy.utils import resp2item_v2
 from utils4scrapy.tk_maintain import _default_redis
+from utils4scrapy.middlewares import ShouldNotEmptyError
 from scrapy import log
 from scrapy.conf import settings
 from scrapy.http import Request
@@ -30,23 +31,14 @@ class FriendsUidSpider(BaseSpider):
             yield request
 
     def source_user(self, response):
-        retries = response.meta.get('retry_times', 0) + 1
         uid = response.meta['uid']
         resp = json.loads(response.body)
+        results = []
 
         items = resp2item_v2(resp)
         if len(items) < 2:
-            if retries > 2:
-                return
-            retryreq = response.request.copy()
-            retryreq.meta['retry_times'] = retries
-            retryreq.dont_filter = True
-            yield retryreq
-
-            return
-
-        for item in items:
-            yield item
+            raise ShouldNotEmptyError()
+        results.extend(items)
 
         user = items[0]
         request = Request(FRIENDS_URL.format(uid=uid, cursor=0), headers=None,
@@ -54,21 +46,30 @@ class FriendsUidSpider(BaseSpider):
         request.meta['uid'] = uid
         request.meta['cursor'] = 0
         request.meta['source_user'] = user
-        yield request
+        results.append(request)
+
+        return results
 
     def more_friends(self, response):
+        uid = response.meta['uid']
         source_user = response.meta['source_user']
+
         resp = json.loads(response.body)
+        results = []
 
         source_user['friends'].extend(resp['ids'])
 
         next_cursor = resp['next_cursor']
         if next_cursor != 0:
-            request = response.request.copy()
-            request.meta['cursor'] = next_cursor
-            yield request
+            request = Request(FRIENDS_URL.format(uid=uid, cursor=next_cursor), headers=None,
+                              callback=self.more_friends)
+            request.meta['uid'] = uid
+            request.meta['source_user'] = source_user
+            results.append(request)
         else:
-            yield source_user
+            results.append(source_user)
+
+        return results
 
     def prepare(self):
         host = settings.get('REDIS_HOST', REDIS_HOST)

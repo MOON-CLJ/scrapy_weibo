@@ -41,11 +41,11 @@ class UserTimelineApril(BaseSpider):
         uid = response.meta['uid']
 
         resp = json.loads(response.body)
+        results = []
 
         if resp.get('statuses') == []:
             raise ShouldNotEmptyError()
 
-        results = []
         for status in resp['statuses']:
             items = resp2item_v2(status)
             results.extend(items)

@@ -5,6 +5,7 @@ import simplejson as json
 from scrapy.spider import BaseSpider
 from utils4scrapy.utils import resp2item_v2
 from utils4scrapy.tk_maintain import _default_redis
+from utils4scrapy.middlewares import ShouldNotEmptyError
 from scrapy import log
 from scrapy.conf import settings
 from scrapy.http import Request
@@ -31,22 +32,13 @@ class RepostTimelineSpider(BaseSpider):
             yield request
 
     def soucre_weibo(self, response):
-        retries = response.meta.get('retry_times', 0) + 1
         resp = json.loads(response.body)
+        results = []
 
         items = resp2item_v2(resp)
         if len(items) < 2:
-            if retries > 2:
-                return
-            retryreq = response.request.copy()
-            retryreq.meta['retry_times'] = retries
-            retryreq.dont_filter = True
-            yield retryreq
-
-            return
-
-        for item in items:
-            yield item
+            raise ShouldNotEmptyError()
+        results.extend(items)
 
         weibo = items[0]
         reposts_count = weibo['reposts_count']
@@ -59,22 +51,17 @@ class RepostTimelineSpider(BaseSpider):
             request.meta['wid'] = wid
             request.meta['source_weibo'] = weibo
 
-            yield request
+            results.append(request)
+
+        return results
 
     def more_reposts(self, response):
-        retries = response.meta.get('retry_times', 0) + 1
         source_weibo = response.meta['source_weibo']
         resp = json.loads(response.body)
+        results = []
 
         if resp['reposts'] == []:
-            if retries > 2:
-                return
-            retryreq = response.request.copy()
-            retryreq.meta['retry_times'] = retries
-            retryreq.dont_filter = True
-            yield retryreq
-
-            return
+            raise ShouldNotEmptyError()
 
         for repost in resp['reposts']:
             items = resp2item_v2(repost)
@@ -82,10 +69,10 @@ class RepostTimelineSpider(BaseSpider):
                 continue
             weibo = items[0]  # 取出转发微博
             source_weibo['reposts'].append(weibo['id'])
-            for item in items:
-                yield item
+            results.extend(items)
 
-        yield source_weibo
+        results.append(source_weibo)
+        return results
 
     def prepare(self):
         host = settings.get('REDIS_HOST', REDIS_HOST)
