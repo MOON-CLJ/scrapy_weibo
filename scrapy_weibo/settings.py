@@ -10,7 +10,6 @@ SCHEDULER = "scrapy_redis.scheduler.Scheduler"
 
 # don't cleanup redis queues, allows to pause/resume crawls
 SCHEDULER_PERSIST = True
-SCHEDULER_REFRESH = True
 
 DOWNLOAD_DELAY = 2
 
@@ -81,6 +80,7 @@ MONGOD_PORT = 27017
 API_KEY = '1966311272'
 SENTRY_DSN = 'http://e1b6b5f0d81e497799c667c1634eca22:facc62aa2c5c44c1a620bc33be8bb6d7@0.0.0.0:9000/2'
 """
+
 
 #prod
 REDIS_HOST = '219.224.135.60'
