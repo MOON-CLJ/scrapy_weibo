@@ -28,7 +28,7 @@ UIDS_PRIORITY_SET = '{spider}:uids_with_priority'
 DEFAULT_SCORE = 5
 AT_LEAST_UPDATE_COUNT = 50
 DABLOOMS_CAPACITY = 2000000000
-DABLOOMS_ERROR_RATE = .00001
+DABLOOMS_ERROR_RATE = .001
 DABLOOMS_FILEPATH = '%s/bloom.bin' % settings.get('PROJECT_ROOT', '/tmp')
 BASE_URL = 'https://api.weibo.com/2/statuses/user_timeline.json?uid={uid}&page={page}&count=100'
 
