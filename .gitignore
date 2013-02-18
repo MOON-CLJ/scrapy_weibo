@@ -1,5 +1,6 @@
 *.py[co]
 *.sw[pon]
+scrapy_weibo/bloom.bin
 
 # Packages
 *.egg

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import os
+
 SPIDER_MODULES = ['scrapy_weibo.spiders']
 NEWSPIDER_MODULE = 'scrapy_weibo.spiders'
 BOT_NAME = 'weibo'
@@ -70,6 +72,8 @@ EXTENSIONS = {
     'scrapy.webservice.WebService': None,
     'scrapy.telnet.TelnetConsole': None,
 }
+
+PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 #dev
 """
