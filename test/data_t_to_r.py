@@ -41,5 +41,6 @@ if __name__ == "__main__":
     #uids_set = "repost_timeline:weiboids"
     #uids_set = "friends:uids_for_friends"
     uids_set = "user_timeline_april:uids"
+    #uids_set = "user_timeline:uids"
     #uids_set = "friends_uids:uids_for_friends"
     txt_to_redis(host, port, uids_set)

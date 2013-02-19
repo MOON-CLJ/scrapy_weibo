@@ -75,21 +75,21 @@ EXTENSIONS = {
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
-#dev
-"""
-REDIS_HOST = 'localhost'
-REDIS_PORT = 6379
-MONGOD_HOST = 'localhost'
-MONGOD_PORT = 27017
-API_KEY = '1966311272'
-SENTRY_DSN = 'http://e1b6b5f0d81e497799c667c1634eca22:facc62aa2c5c44c1a620bc33be8bb6d7@0.0.0.0:9000/2'
-"""
+IS_PROD = 1
 
-
-#prod
-REDIS_HOST = '219.224.135.60'
-REDIS_PORT = 6379
-MONGOD_HOST = '219.224.135.60'
-MONGOD_PORT = 27017
-API_KEY = '4131380600'
-SENTRY_DSN = 'http://3349196dad314183ba8e07edcd95b884:feb54ca50ead45d2bef6e6571cf76229@219.224.135.60:9000/2'
+if IS_PROD:
+    #prod
+    REDIS_HOST = '219.224.135.60'
+    REDIS_PORT = 6379
+    MONGOD_HOST = '219.224.135.60'
+    MONGOD_PORT = 27017
+    API_KEY = '4131380600'
+    SENTRY_DSN = 'http://3349196dad314183ba8e07edcd95b884:feb54ca50ead45d2bef6e6571cf76229@219.224.135.60:9000/2'
+else:
+    #dev
+    REDIS_HOST = 'localhost'
+    REDIS_PORT = 6379
+    MONGOD_HOST = 'localhost'
+    MONGOD_PORT = 27017
+    API_KEY = '1966311272'
+    SENTRY_DSN = 'http://e1b6b5f0d81e497799c667c1634eca22:facc62aa2c5c44c1a620bc33be8bb6d7@0.0.0.0:9000/2'
