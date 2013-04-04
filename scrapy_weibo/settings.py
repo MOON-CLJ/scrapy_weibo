@@ -49,7 +49,7 @@ SPIDER_MIDDLEWARES = {
     # 如果process_spider_input或spider里抛出错误，
     # process_spider_exception是反向执行的，即要想记录错误得先过sentry，在捕获重试
     'utils4scrapy.middlewares.RetryErrorResponseMiddleware': 940,
-    'utils4scrapy.middlewares.SentrySpiderMiddleware': 950,
+    #'utils4scrapy.middlewares.SentrySpiderMiddleware': 950,
 }
 
 DOWNLOADER_MIDDLEWARES = {
@@ -61,11 +61,12 @@ DOWNLOADER_MIDDLEWARES = {
     'scrapy.contrib.downloadermiddleware.redirect.RedirectMiddleware': None,
     'scrapy.contrib.downloadermiddleware.cookies.CookiesMiddleware': None,
     'scrapy.contrib.downloadermiddleware.httpproxy.HttpProxyMiddleware': None,
-    'utils4scrapy.middlewares.SentryDownloaderMiddleware': 950,
+    #'utils4scrapy.middlewares.SentryDownloaderMiddleware': 950,
 }
 
 ITEM_PIPELINES = [
     'utils4scrapy.pipelines.MongodbPipeline',
+    'scrapy_weibo.pipelines.JsonWriterPipeline',
 ]
 
 EXTENSIONS = {
