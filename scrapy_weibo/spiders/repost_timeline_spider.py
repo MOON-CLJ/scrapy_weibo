@@ -80,9 +80,9 @@ class RepostTimelineSpider(BaseSpider):
         self.r = _default_redis(host, port)
 
         weiboids_set = WEIBOIDS_SET.format(spider=self.name)
-        log.msg(format='Load weiboids from %(weiboids_set)s', level=log.WARNING, weiboids_set=weiboids_set)
+        log.msg(format='Load weiboids from %(weiboids_set)s', level=log.INFO, weiboids_set=weiboids_set)
         weiboids = self.r.smembers(weiboids_set)
         if weiboids == []:
-            log.msg(format='Not load any weiboids from %(weiboids_set)s', level=log.WARNING, weiboids_set=weiboids_set)
+            log.msg(format='Not load any weiboids from %(weiboids_set)s', level=log.INFO, weiboids_set=weiboids_set)
 
         return weiboids

@@ -111,10 +111,10 @@ class UserTimelineSpider(BaseSpider):
         uids_priority_set = UIDS_PRIORITY_SET.format(spider=self.name)
         self.uids_priority_set = uids_priority_set
 
-        log.msg(format='Load uids from %(uids_set)s', level=log.WARNING, uids_set=uids_set)
+        log.msg(format='Load uids from %(uids_set)s', level=log.INFO, uids_set=uids_set)
         uids = self.r.smembers(uids_set)
         if uids == []:
-            log.msg(format='Not load any uids from %(uids_set)s', level=log.WARNING, uids_set=uids_set)
+            log.msg(format='Not load any uids from %(uids_set)s', level=log.INFO, uids_set=uids_set)
 
         # 初始化priority
         for uid in uids:

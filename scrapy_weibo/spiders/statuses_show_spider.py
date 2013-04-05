@@ -39,9 +39,9 @@ class StatusesSpider(BaseSpider):
         self.r = _default_redis(host, port)
 
         mids_set = MIDS_SET.format(spider=self.name)
-        log.msg(format='Load mids from %(mids_set)s', level=log.WARNING, mids_set=mids_set)
+        log.msg(format='Load mids from %(mids_set)s', level=log.INFO, mids_set=mids_set)
         mids = self.r.smembers(mids_set)
         if mids == []:
-            log.msg(format='Not load any mids from %(mids_set)s', level=log.WARNING, mids_set=mids_set)
+            log.msg(format='Not load any mids from %(mids_set)s', level=log.INFO, mids_set=mids_set)
 
         return mids

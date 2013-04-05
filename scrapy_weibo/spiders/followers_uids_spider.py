@@ -77,9 +77,9 @@ class FriendsUidSpider(BaseSpider):
         self.r = _default_redis(host, port)
 
         uids_set = UIDS_SET.format(spider=self.name)
-        log.msg(format='Load uids from %(uids_set)s', level=log.WARNING, uids_set=uids_set)
+        log.msg(format='Load uids from %(uids_set)s', level=log.INFO, uids_set=uids_set)
         uids = self.r.smembers(uids_set)
         if uids == []:
-            log.msg(format='Not load any uids from %(uids_set)s', level=log.WARNING, uids_set=uids_set)
+            log.msg(format='Not load any uids from %(uids_set)s', level=log.INFO, uids_set=uids_set)
 
         return uids
