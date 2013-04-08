@@ -1,6 +1,7 @@
 *.py[co]
 *.sw[pon]
 scrapy_weibo/bloom.bin
+.ropeproject
 
 # Packages
 *.egg

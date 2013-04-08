@@ -61,6 +61,7 @@ DOWNLOADER_MIDDLEWARES = {
     'scrapy.contrib.downloadermiddleware.redirect.RedirectMiddleware': None,
     'scrapy.contrib.downloadermiddleware.cookies.CookiesMiddleware': None,
     'scrapy.contrib.downloadermiddleware.httpproxy.HttpProxyMiddleware': None,
+    'scrapy.contrib.downloadermiddleware.httpcache.HttpCacheMiddleware': None,
     #'utils4scrapy.middlewares.SentryDownloaderMiddleware': 950,
 }
 
