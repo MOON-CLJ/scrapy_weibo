@@ -12,7 +12,6 @@ from scrapy.http import Request
 
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
-API_KEY = '4131380600'
 UIDS_SET = '{spider}:uids'
 BASE_URL = 'https://api.weibo.com/2/statuses/user_timeline.json?uid={uid}&page={page}&since_id={since_id}&max_id={max_id}&count=100'
 
@@ -43,7 +42,7 @@ class UserTimelineApril(BaseSpider):
         resp = json.loads(response.body)
         results = []
 
-        if resp.get('statuses') == []:
+        if not resp.get('statuses'):
             raise ShouldNotEmptyError()
 
         for status in resp['statuses']:

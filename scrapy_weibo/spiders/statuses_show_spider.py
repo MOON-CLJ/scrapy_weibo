@@ -12,7 +12,6 @@ from scrapy.http import Request
 
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
-API_KEY = '4131380600'
 MIDS_SET = '{spider}:mids'
 BASE_URL = 'https://api.weibo.com/2/statuses/show.json?id={mid}'
 

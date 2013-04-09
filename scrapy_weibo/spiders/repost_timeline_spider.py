@@ -12,7 +12,6 @@ from scrapy.http import Request
 
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
-API_KEY = '4131380600'
 WEIBOIDS_SET = '{spider}:weiboids'
 BASE_URL = 'https://api.weibo.com/2/statuses/repost_timeline.json?id={id}&page={page}&count=200'
 SOURCE_WEIBO_URL = 'https://api.weibo.com/2/statuses/show.json?id={id}'
@@ -60,7 +59,7 @@ class RepostTimelineSpider(BaseSpider):
         resp = json.loads(response.body)
         results = []
 
-        if resp['reposts'] == []:
+        if not resp.get('reposts'):
             raise ShouldNotEmptyError()
 
         for repost in resp['reposts']:

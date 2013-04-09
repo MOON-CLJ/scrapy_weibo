@@ -12,7 +12,6 @@ from scrapy.http import Request
 
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
-API_KEY = '4131380600'
 UIDS_SET = '{spider}:uids_for_followers'
 FOLLOWERS_URL = 'https://api.weibo.com/2/friendships/followers/ids.json?uid={uid}&cursor={cursor}&count=5000'
 SOURCE_USER_URL = 'https://api.weibo.com/2/users/show.json?uid={uid}'

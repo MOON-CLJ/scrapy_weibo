@@ -20,7 +20,6 @@ REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
 MONGOD_HOST = 'localhost'
 MONGOD_PORT = 27017
-API_KEY = '4131380600'
 UIDS_SET = '{spider}:uids'
 # redis hash ie: HGET user_timeline:uids_with_priority {uid}
 # 0 <= score <= 10 [0, 3] [4, 7] [8, 10]
@@ -66,7 +65,7 @@ class UserTimelineSpider(BaseSpider):
         resp = json.loads(response.body)
         results = []
 
-        if resp.get('statuses') == []:
+        if not resp.get('statuses'):
             raise ShouldNotEmptyError()
 
         for status in resp['statuses']:
