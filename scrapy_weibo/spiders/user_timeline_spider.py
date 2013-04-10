@@ -91,6 +91,8 @@ class UserTimelineSpider(BaseSpider):
             elif update_count == 0 and self.r.hget(self.uids_priority_set, uid) > 0:
                 self.r.hincrby(self.uids_priority_set, uid, -1)
 
+            log.msg(format='Score [uid:%(uid)s] update to %(score)s', level=log.INFO, uid=uid, score=self.r.hget(self.uids_priority_set, uid))
+
         if update_count > AT_LEAST_UPDATE_COUNT:
             page += 1
             request = Request(BASE_URL.format(uid=uid, page=page), headers=None)
@@ -98,6 +100,7 @@ class UserTimelineSpider(BaseSpider):
             request.meta['uid'] = uid
 
             results.append(request)
+            log.msg(format='One more page [uid:%(uid)s] page:%(page)s update_count:%(update_count)s', level=log.INFO, uid=uid, page=page, update_count=update_count)
 
         return results
 
