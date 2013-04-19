@@ -13,6 +13,9 @@ SCHEDULER = "scrapy_redis.scheduler.Scheduler"
 # don't cleanup redis queues, allows to pause/resume crawls
 SCHEDULER_PERSIST = True
 
+# Schedule requests using a queue (FIFO).
+SCHEDULER_QUEUE_CLASS = 'scrapy_redis.queue.SpiderQueue'
+
 DOWNLOAD_DELAY = 2
 
 # middlewares 的意思是在engine和download handler之间有一层，包括进入download
@@ -67,7 +70,7 @@ DOWNLOADER_MIDDLEWARES = {
 
 ITEM_PIPELINES = [
     'utils4scrapy.pipelines.MongodbPipeline',
-    'scrapy_weibo.pipelines.JsonWriterPipeline',
+    #'scrapy_weibo.pipelines.JsonWriterPipeline',
 ]
 
 EXTENSIONS = {
