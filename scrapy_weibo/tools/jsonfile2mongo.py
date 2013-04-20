@@ -4,7 +4,7 @@ from utils4scrapy.items import WeiboItem, UserItem
 from utils4scrapy.pipelines import MongodbPipeline
 import simplejson as json
 
-FILEPATH = '/home/mirage/Downloads/data/items.jl1'
+FILEPATH = '/home/mirage/Downloads/data/items2.jl'
 
 pipe = MongodbPipeline()
 

@@ -16,7 +16,20 @@ SCHEDULER_PERSIST = True
 # Schedule requests using a queue (FIFO).
 SCHEDULER_QUEUE_CLASS = 'scrapy_redis.queue.SpiderQueue'
 
-DOWNLOAD_DELAY = 2
+DOWNLOAD_DELAY = 0.3
+
+# 期望减少mongodb的压力
+CONCURRENT_ITEMS = 1
+CONCURRENT_REQUESTS = 1
+CONCURRENT_REQUESTS_PER_DOMAIN = 1
+
+# 不需要默认的180秒,更多的机会留给重试
+DOWNLOAD_TIMEOUT = 15
+
+AUTOTHROTTLE_ENABLED = True
+AUTOTHROTTLE_START_DELAY = 2
+AUTOTHROTTLE_CONCURRENCY_CHECK_PERIOD = 100
+AUTOTHROTTLE_DEBUG = True
 
 # middlewares 的意思是在engine和download handler之间有一层，包括进入download
 # handler之前和从download handler出来之后，同理spider (handler)
