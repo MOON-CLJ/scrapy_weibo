@@ -16,6 +16,8 @@ SCHEDULER_PERSIST = True
 # Schedule requests using a queue (FIFO).
 SCHEDULER_QUEUE_CLASS = 'scrapy_redis.queue.SpiderQueue'
 
+SCHEDULER_IDLE_BEFORE_CLOSE = 10
+
 DOWNLOAD_DELAY = 0.3
 
 # 期望减少mongodb的压力
