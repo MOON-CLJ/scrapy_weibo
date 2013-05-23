@@ -28,7 +28,7 @@ with open(FILEPATH, 'r') as f:
             user_count += 1
 
         if item:
-            pipe.process_item(item, None)
+            pipe.process_item_sync(item, None)
             print '.'
 
         print 'weibo:', weibo_count, 'user:', user_count
